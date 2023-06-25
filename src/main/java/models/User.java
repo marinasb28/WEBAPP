@@ -12,204 +12,168 @@ import java.sql.Date;
 
 public class User implements java.io.Serializable {
 	
-	/* not sure si esto es necesario */
-	public DB db = null;
-	ManageUsers manager = new ManageUsers();
-	
-	public void init() throws ServletException{
-    	try {
-    		db = new DB();
-    	} catch (Exception e) {
-    		e.printStackTrace();
-    		System.out.println("Connection failed in User.");
-    	}
-    }
-	/* ESTO DE ARRIBA ES LO QUE HABRÍA QUE BORRAR SI NO FUNCIONA  */
 
 	private static final long serialVersionUID = 1L;
 	
-	private int id = 0; //se le asignará automáticamente
-	private String username = "";
+	private int id = 0;
+	private String user = "";
+
 	private String name = "";
 	private String surname = "";
-	private String phone = "";
+
 	private String mail = "";
-	private Date datebirth = null; // no tiene error inicial
-	private String pwd = "";
+	private String tel = "";
+	private Date dob = null;
+	//private Date dob = new Date(System.currentTimeMillis());
+
+	private String pwd1 = "";
 	private String pwd2 = "";
-	
-	private String about = "";
-	private int city = 0;
-	private String gender = "";
-	
-	/*private ¿photo? picture = null; */
+
+	private String usertype = "Common user";
+	private String about = null;
+	private boolean isFollowed;
 
 	private HashMap<String,Boolean> error = null;
 	
 	public User() {
 		error = new HashMap<String, Boolean>();
-		error.put("username_wrong_format", false);
-		error.put("username_exists", false);
+		error.put("user", false);
+		error.put("user_format", false);
+		error.put("user_exists", false);
 		error.put("name", false);
 		error.put("surname", false);
-		error.put("phone_wrong_format", false);
-		error.put("phone_exists", false);
-		error.put("mail_wrong_format", false);
+		error.put("mail_format", false);
 		error.put("mail_exists", false);
-		error.put("age", false);
-		error.put("pwd_wrong_format", false);
-		error.put("pwd2_wrong_format", false);
+		error.put("tel_format", false);
+		error.put("tel_exists", false);
+		error.put("dob", false);
+		error.put("pwd1_format", false);
+		error.put("pwd2_format", false);
 		error.put("pwd2_match", false);
 		error.put("about", false);
-		error.put("gender", false);
-		
-		/* LOS SIGUIENTES SON INTEGERS, ns si estrán bien */
-		error.put("id",false);
-		error.put("city",false);
 	}
 	
-	/* GETTERS */
-	public int getId() {
+	/* ALL GETTERS */
+	public int getId(){
 		return this.id;
 	}
-	
-	public String getUsername() {
-		return this.username;
+	public String getUser(){
+		return this.user;
 	}
-	
-	public String getName() {
+	public String getName(){
 		return this.name;
 	}
-	
-	public String getSurname() {
+	public String getSurname(){
 		return this.surname;
 	}
-	
-	public String getPhone() {
-		return this.phone;
-	}
-	
-	public String getMail() {
+	public String getMail(){
 		return this.mail;
 	}
-	
-	public Date getDatebirth() {
-		return this.datebirth;
+	public String getTel(){
+		return this.tel;
 	}
-	
-	public String getPwd() {
-		return this.pwd;
+	public Date getDob(){
+		return this.dob;
 	}
-	
-	public String getPwd2() {
+	public String getDob(){
+		return this.dob;
+	}
+	public String getPwd1(){
+		return this.pwd1;
+	}
+	public String getPwd2(){
 		return this.pwd2;
 	}
-	
-	public String getAbout() {
+	public String getUsertype(){
+		return this.usertype;
+	}
+	public String getAbout(){
 		return this.about;
 	}
-	
-	public int getCity() {
-		return this.city;
+	public boolean getIsfollowed(){
+		return this.isFollowed;
 	}
 	
-	public String getGender() {
-		return this.gender;
+	/* ALL SETTERS */
+	public void setId(int id){
+		this.id = id;
 	}
-	
-	/* SETTERS */
-	public void setId(int id) {
-		String idString = String.valueOf(id);
-		if (idString.matches("\\d+")) {
-			this.id = id; // en el caso de que sea un número entero
-		} else {
-			error.put("id", true);
-			System.out.println("El valor introducido no es válido. Debe ser un número entero.");
-		}
-
-	}
-	
-	public void setUsername(String username) {
-		/* We can simulate that a user with the same name exists in our DB and mark error[0] as true  */
+	public void setUser(String user){
+		/* the username needs to follow a specific format */
 		String regex = "^[a-z0-9._]{5,20}$";
-		if (!username.matches(regex)) {
-			error.put("username_wrong_format", true);
-			System.out.println("the username does not match the format of 5-20 character with at least one letter.");
-		} else if (manager.checkUser(username)) {
-			error.put("username_exists", true);
-			System.out.println("The username has already been taken.");
-		} else {
-			this.username = username;
-			System.out.println("Welcome: "+username);
+		if(!user.matches(regex)){
+			error.put("user_format",true);
+			System.out.println("Username doesn't match format.");
+		}
+		/* the username already exists in our DB */
+		else if(manager.userExists(user)){
+			error.put("user_exists",true);
+			System.out.println("Username already in our DB.");
+		} else{
+			this.user = user;
 		}
 	}
-	
-	public void setName(String name) {
-		String regex = "^[\\p{L}]{1,20}$"; //"^[a-zA-Z]{1,20}$";
-	    if (!name.matches(regex)) {
+	public void setName(String name){
+		String regex = "^[\\p{L}]{1,20}$"; // acentos permitidos para nombre
+		if (!name.matches(regex)) {
 			error.put("name", true);
-	        System.out.println("The name must have between 1 and 20 letters.");
-	    } else {
-	    	this.name = name;
-			System.out.println("Welcome: "+ name);
-	    }
-	}
-	
-	public void setSurname(String surname) {
-		String regex = "^[\\p{L}]{1,20}$"; //"^[a-zA-Z]{1,20}$";
-	    if (!surname.matches(regex)) {
-			error.put("surname", true);
-	        System.out.println("The surname must have between 1 and 20 letters.");
-	    } else {
-	    	this.surname = surname;
-	    }
-	}
-	
-	public void setPhone(String phone) {
-		String regex = "\\d{9}$";		//here we need two \ because otherwise java recognises it as an escape sequence
-	    if (!phone.matches(regex)) {
-			error.put("phone_wrong_format", true);
-			System.out.println("The phone's length MUST BE 9.");
-	    } else if (manager.checkPhone(phone)) {
-			error.put("phone_exists", true);
-			System.out.println("The phone has already been used.");
-	    } else {
-	    	this.phone = phone;
-	    }
-	}
-	
-	public void setMail(String mail) {
-		String regex = "^[a-zA-Z0-9_!#$%&'*+/=?`{|}~^.-]+@[a-zA-Z0-9.-]+$";
-		Pattern pattern = Pattern.compile(regex);
-		Matcher matcher = pattern.matcher(mail);
-		
-		if (matcher.matches()) {
-			System.out.println("Mail matches the pattern");
-			if (manager.checkMail(mail)) {
-				error.put("mail_exists", true);
-				System.out.println("The mail has already been used.");
-			} else {
-				this.mail = mail;
-			}
+			System.out.println("The name must have between 1 and 20 letters.");
 		} else {
-			error.put("mail_wrong_format", true);
-			System.out.println("Mail doesn't match the pattern");
+			this.name = name;
+			System.out.println("Welcome: "+ name);
 		}
 	}
-	
-	public void setDatebirth(Date datebirth) {
+	public void setSurname(String surname){
+		String regex = "^[\\p{L}]{1,20}$"; // acentos permitidos para apellidos
+		if (!surname.matches(regex)) {
+			error.put("surname", true);
+			System.out.println("The surname must have between 1 and 20 letters.");
+		} else {
+			this.surname = surname;
+		}
+	}
+	public void setMail(String mail) {
+		/* the mail needs to follow a specific format */
+		String regex = "^[a-zA-Z0-9_!#$%&'*+/=?`{|}~^.-]+@[a-zA-Z0-9.-]+$";
+		if(!mail.matches(regex)){
+			error.put("mail_format",true);
+			System.out.println("Mail doesn't match format.");
+		}
+		/* the mail already exists in our DB */
+		else if(manager.mailExists(mail)){
+			error.put("mail_exists",true);
+			System.out.println("Mail already in our DB.");
+		} else{
+			this.mail = mail;
+		}
+	}
+	public void setTel(String tel) {
+		/* the telephone needs to follow a specific format */
+		String regex = "\\d{9}$";
+		if(!tel.matches(regex)){
+			error.put("tel_format",true);
+			System.out.println("Telephone doesn't match format.");
+		}
+		/* the telephone already exists in our DB */
+		else if(manager.telExists(tel)){
+			error.put("tel_exists",true);
+			System.out.println("Telephone already in our DB.");
+		} else{
+			this.tel = tel;
+		}
+	}
+	public void setDob(Date dob) {
 		Calendar cal = Calendar.getInstance();
-	    cal.setTime(datebirth);
+	    cal.setTime(dob);
 	    int age = Calendar.getInstance().get(Calendar.YEAR) - cal.get(Calendar.YEAR);
 	    if (age < 13) {
-			error.put("datebirth", true);
+			error.put("dob", true);
 	        System.out.println("User must be 13 or older to create an account.");
 	    } else {
-	        this.datebirth = datebirth;
-			System.out.println(name +"is "+age+" years old");
+	        this.dob = dob;
+			System.out.println("User "+name +"is "+age+" years old.");
 	    }
 	}
-	
 	public void setPwd(String pwd) {
 		/* ST COMMENT:
 		 * at least 6 characters, max 12
@@ -224,11 +188,10 @@ public class User implements java.io.Serializable {
 			this.pwd = pwd;
 			System.out.println("Your password is: " + pwd);
 		} else {
-			error.put("pwd_wrong_format", true);
+			error.put("pwd1_format", true);
 			System.out.println("The password does not fulfill the restriction");			
 		}
 	}
-	
 	public void setPwd2(String pwd2) {
 		String regex = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&_-])[A-Za-z\\d@$!%*?&_-]{6,12}$";	    
 	    if (pwd2.matches(regex)) {
@@ -241,38 +204,32 @@ public class User implements java.io.Serializable {
 	    		System.out.println("Passwords don't match");
 	    	}
 	    } else {
-			error.put("pwd2_wrong_format", true);
+			error.put("pwd2_format", true);
 	    	System.out.println("The password does not fulfill the restriction");
 	    }
 	}
-	
-	public void setAbout(String about) {
-		this.about = about;
+	public void setUsertype(String usertype){
+		//no debemos checkear nada ya que tendremos un menú
+		this.usertype = usertype;
 	}
-	
-	public void setCity(int city) {
-		String idString = String.valueOf(city);
-		if (idString.matches("\\d+")) {
-			error.put("city", true);
-			this.city = city; // en el caso de que sea un número entero
-		} else {
-			System.out.println("El valor introducido no es válido. Debe ser un número entero.");
+	public void setAbout(String about){
+		int len = about.length()
+		if(len > 150){
+			error.put("about",true);
+			System.out.println("Biography is too long.");
+		}else{
+			this.about = about;
 		}
-
 	}
-	
-	public void setGender(String gender) {
-		this.gender = gender;
+	public void setIsfollowed(boolean isFollowed){
+		this.isFollowed = isFollowed;
 	}
-
 
 	/* OTHER FUNCTIONS */
 	public HashMap<String,Boolean> getError() {
 		return this.error;
 	}
-	
 	public void setError(String name, boolean error) {
 		this.error.put(name, error);
 	}
-		
 }
