@@ -1,0 +1,165 @@
+.required-form {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 500px;
+  height: 820;
+  margin: 0 auto;
+  background-color: white;
+  border: none;
+  border-radius: 40px;
+  padding: 20px;
+  box-sizing: border-box;
+
+}
+
+
+.required-form h1 {
+  order: -1; /* Moves the h1 element to the top */
+  margin-bottom: 20px; /* Adds some space between the h1 and the form */
+  font-size: 22px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+  font-weight: bold;
+  color: #14171a;
+  
+  /* NEW  LINE */
+  /*text-align: center;*/
+}
+
+.required-form input {
+  margin-bottom: 10px;
+}
+
+.required-form ul {
+  margin-bottom: 0;
+}
+
+.required-form label {
+  display: inline-block;
+  white-space: nowrap;
+  /*width: 600px; */
+  color: #14171a;
+  margin-bottom: 2px;
+
+  /* NEW LINES */
+  width: 100%;
+  max-width: 500px; 
+}
+
+
+.required-form input[type="text"],
+.required-form input[type="email"],
+.required-form input[type="tel"],
+.required-form input[type="date"],
+.required-form input[type="password"] {
+  /*width: 400px;*/
+  text-align: center;
+  margin-left: auto;
+  margin-right: auto;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+
+  /* NEW LINE */
+  width: 100%;
+}
+
+.required-form label[for="dob"]::after {
+  content: "(Birth date)";
+  display: inline-block;
+  font-weight: normal;
+  color: gray;
+  margin-left: 5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100px;
+}
+
+.birth-date-container {
+  display: flex;
+  align-items: flex-end;
+}
+
+.birth-date-container label {
+  flex: 0 0 30%;
+  text-align: right;
+  margin-right: 10px;
+}
+
+.birth-date-container input {
+  flex: 1;
+  width: 100%;
+}
+
+.error-input {
+  border: 2px solid red;
+  background-color: rgba(255, 0, 0, 0.1);
+}
+
+input:valid {
+  border-left: 4px solid green;
+}
+
+input:invalid {
+  border-left: 4px solid red;
+}
+
+/* HERE */
+.select {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  position: relative;
+  display: inline-block;
+  margin-top: 10px;
+}
+
+.select::before,
+.select::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  width: 0;
+  height: 0;
+  border: 6px solid transparent;
+  pointer-events: none;
+}
+
+.select::before {
+  border-top-color: #999;
+  margin-top: -4px;
+}
+
+.select::after {
+  border-top-color: #fff;
+  margin-top: -3px;
+}
+
+.select select {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 100%;
+  padding: 8px;
+  font-size: 16px;
+  border: 1px solid #999;
+  border-radius: 4px;
+  background-color: #fff;
+  box-shadow: none;
+  cursor: pointer;
+}
+
+.select select:focus {
+  outline: none;
+  border-color: #66afe9;
+}
+
+.select select option {
+  background-color: #fff;
+  color: #333;
+}
+
+#terms-of-service-container {
+  margin-top: 20px;
+}
