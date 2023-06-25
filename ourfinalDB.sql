@@ -45,15 +45,12 @@ CREATE TABLE Tweet(
   username VARCHAR(255) default null,
   `date` timestamp null default null,
   text varchar(150) default null,
-  postId int(10) default null,
   countLikes int(10) default 0,
   countHashtag int(10) default 0,
   countComment int(10) default 0,
   primary key(id),
   foreign key (userId) references User(id)
 );
-
-ALTER TABLE Tweet ADD   foreign key (postId) references Tweet(id);
 
 
 DROP TABLE IF EXISTS TweetLikes;
