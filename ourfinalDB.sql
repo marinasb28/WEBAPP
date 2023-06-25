@@ -22,7 +22,7 @@ CREATE TABLE User(
   tel varchar(255) not null,
   dob date not null,
   pwd varchar(255) not null,
-  /*usertype possible values: 'Administrator‘, Common user, ‘Brand‘*/
+  /*usertype possible values: 'Administrator‘, 'Common', ‘Brand‘*/
   usertype varchar(255) not null,
   about varchar(255) not null,
   primary key(id),
@@ -34,9 +34,8 @@ CREATE TABLE Following(
   userId int(10) not null,
   followedId int(10) not null,
   primary key(userId,followedId),
-  foreign key fId (followedId),
-  constraint id_user_followed foreign key (userId) references User(id),
-  constraint id foreign key (followedId) references User(id)
+  foreign key (userId) references User(id),
+  foreign key (followedId) references User(id)
 );
 
 DROP TABLE IF EXISTS Tweet;
@@ -49,22 +48,19 @@ CREATE TABLE Tweet(
   countLikes int(10) default 0,
   countHashtag int(10) default 0,
   countComment int(10) default 0,
-  countRetweet int(10) default 0,
   primary key(id),
-  foreign key userId_tweet (userId),
-  foreign key tweetId_tweet (postId),
-  constraint userId_tweet foreign key (userId) references User(id),
-  constraint tweetId_tweet foreign key (postId) references Tweet(postId)
+  foreign key (userId) references User(id),
+  foreign key (postId) references Tweet(postId)
 );
+
 
 DROP TABLE IF EXISTS TweetLikes;
 CREATE TABLE TweetLikes(
   userId int(10) not null,
   postId int(10) not null,
   primary key (userId,postId),
-  foreign key tweetId (postId),
-  constraint userId_tweet foreign key (userId) references User(id),
-  constraint tweetId_tweet foreign key (postId) references Tweet(postId)
+  foreign key (userId) references User(id),
+  foreign key (postId) references Tweet(id)
 );
 
 -- ESTA ES LA ÚNICA TABLA QUE ELLOS NO TIENEN Y NOSOTROS TENÍAMOS DE MÁS
@@ -81,15 +77,24 @@ Foreign key (author) references User(id)
 
 /* ADMINISTRATORS (US) WILL BE ADD BY DEFAULT */
 INSERT INTO User (username, `name`, surname, mail, tel, dob, pwd, usertype, about)
-VALUES
+VALUES 
   ('marinasb28', 'Marina', 'Suárez', 'marina@gmail.com', '123456789', '2001-07-28', 'Marin@2', 'Administrator', "Hey, what's up?"),
-  ('arne_be', 'Arne', 'Berrseheim', 'arne@gmail.com', '123123123', '2000-10-01', 'Hello@123', 'Administrator', "I'm finnaly done with my TFG")
+  ('arne_be', 'Arne', 'Berrseheim', 'arne@gmail.com', '123123123', '2000-10-01', 'Hello@123', 'Administrator', "I'm finnaly done with my TFG"),
   ("mariacp3", "Maria", "Cerezo","maria@gmail.com", "672182625",  "1997-16-05", "Mari@3!", "Administrator","Good morning everybody!"),
-  ("claudia_quera", "Claudia", "Quera","claudia@gmail.com", "612345678","2001-04-07", "Claudi@1", "Administrator", "I love basketball!"
-);
+  ("claudia_quera", "Claudia", "Quera","claudia@gmail.com", "612345678","2001-04-07", "Claudi@1", "Administrator", "I love basketball!"),
+  
+  ('randomUser1', 'Max', 'Mustermann', 'max@gmail.com', '123456123', '2000-01-01', 'Password@123', 'Common', 'Im here and using WhatsApp.'),
+  ('randomUser2', 'Maxime', 'Muster', 'maxime@gmail.com', '123456124', '2000-01-01', 'Password@123', 'Common', 'Im here and using WhatsApp.'),
+  ('randomUser3', 'Theo', 'Mann', 'theo@gmail.com', '123456125', '2000-01-01', 'Password@123', 'Common', 'Im here and using WhatsApp.');
 
 /* NOW WE INSERT SOME DEFAULT DATA (tweets, comments...)*/
- -- TODO
+INSERT INTO Tweet (userId, `date`, text, postId, countLikes, countHashtag, countComment)
+VALUES 
+	(5, '2023-05-03', 'Hello World!',  null, 0, 0, 0),
+    (4, '2023-05-03', 'Hello World!',  null, 0, 0, 0),
+    (2, '2023-05-03', 'Hello World too!',  1, 0, 0, 0);
+    
+
 /* WE CHECK ALL THE DATA */
 select * from User;
 select * from Tweet;
