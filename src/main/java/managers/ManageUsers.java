@@ -12,10 +12,6 @@ import org.apache.commons.lang3.tuple.Pair;
 import models.User;
 import utils.DB;
 
-/* IMPORTS WE ADDED */
-import java.sql.Date;
-
-
 public class ManageUsers {
 	
 	private DB db = null ;
@@ -42,7 +38,7 @@ public class ManageUsers {
 	
 	/* Get a user given its PK*/
 	public User getUser(Integer id) {
-		String query = "SELECT id,username,name,surname,mail FROM User WHERE id = ? ;";
+		String query = "SELECT id,username,name,surname,mail,tel,dob,usertype,about FROM User WHERE id = ? ;";
 		PreparedStatement statement = null;
 		ResultSet rs = null;
 		User user = null;
@@ -53,10 +49,15 @@ public class ManageUsers {
 			if (rs.next()) {
 				user = new User();
 				user.setId(rs.getInt("id"));
-				user.setName(rs.getString("username"));
+				user.setUser(rs.getString("username"));
 				user.setName(rs.getString("name"));
 				user.setSurname(rs.getString("surname"));
 				user.setMail(rs.getString("mail"));
+				user.setTel(rs.getString("tel"));
+				user.setMail(rs.getString("mail"));
+				user.setDob(rs.getString("dob"));
+				user.setUsertype(rs.getString("usertype"));
+				user.setAbout(rs.getString("about"));
 			}
 			rs.close();
 			statement.close();
@@ -65,48 +66,20 @@ public class ManageUsers {
 		}		
 		return user;
 	}
-	
-	// get a user given its username
-	public User getUser(String username) {
-		String query = "SELECT id,username,name,surname,mail FROM User WHERE username = ? ;";
-		PreparedStatement statement = null;
-		ResultSet rs = null;
-		User user = null;
-		try {
-			statement = db.prepareStatement(query);
-			statement.setString(1,username);
-			rs = statement.executeQuery();
-			if (rs.next()) {
-				user = new User();
-				user.setId(rs.getInt("id"));
-				user.setName(rs.getString("username"));
-				user.setName(rs.getString("name"));
-				user.setSurname(rs.getString("surname"));
-				user.setMail(rs.getString("mail"));
-			}
-			rs.close();
-			statement.close();
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}		
-		return user;
-	}
-		
-	// Add new user
+
+	/* Add new user */
 	public void addUser(User user) {
-		String query = "INSERT INTO User (username, name, surname, phone, mail, datebirth, pwd) " +
-		"VALUES (?, ?, ?, ?, ?, ?, ?)";
-		
+		String query = "INSERT INTO User (username, name, mail, pwd, usertype, about, dob) VALUES (?, ?, ?, ?, ?, ?, ?)";
 		PreparedStatement statement = null;
 		try {
 			statement = db.prepareStatement(query);
-			statement.setString(1, user.getUsername());
-			statement.setString(2, user.getName());
-			statement.setString(3, user.getSurname());
-			statement.setString(4, user.getPhone());
-			statement.setString(5, user.getMail());
-			statement.setDate(6, user.getDatebirth());
-			statement.setString(7, user.getPwd());
+			statement.setString(1,user.getUser());
+			statement.setString(2,user.getName());
+			statement.setString(3,user.getMail());
+			statement.setString(4,user.getPwd1());
+			statement.setString(5,user.getUsertype());
+			statement.setString(6, user.geAbout());
+			statement.setDate(7, user.getDob());
 			statement.executeUpdate();
 			statement.close();
 		} catch (SQLIntegrityConstraintViolationException e) {
@@ -115,27 +88,32 @@ public class ManageUsers {
 			e.printStackTrace();
 		}
 	}
-	
-	// Follow a user
+
+	/* Follow a user */
 	public void followUser(Integer uid, Integer fid) {
-		String query = "INSERT INTO Following (uid,fid) VALUES (?,?)";
+		String query = "INSERT INTO Following (userId, followedId) VALUES (?, ?)";
 		PreparedStatement statement = null;
 		try {
 			statement = db.prepareStatement(query);
 			statement.setInt(1,uid);
 			statement.setInt(2,fid);
+			
 			statement.executeUpdate();
 			statement.close();
+			
+			User user = new User();
+			user = this.getUser(fid);
+			user.setIsfollowed(true);
 		} catch (SQLIntegrityConstraintViolationException e) {
 			System.out.println(e.getMessage());
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
 	}
-	
-	// Unfollow a user
+
+	/* Unfollow a user */
 	public void unfollowUser(Integer uid, Integer fid) {
-		String query = "DELETE FROM Following WHERE uid = ? AND fid = ?";
+		String query = "DELETE FROM Following WHERE userId = ? AND followedId = ?";
 		PreparedStatement statement = null;
 		try {
 			statement = db.prepareStatement(query);
@@ -143,18 +121,20 @@ public class ManageUsers {
 			statement.setInt(2,fid);
 			statement.executeUpdate();
 			statement.close();
+			
+			User user = new User();
+			user = this.getUser(fid);
+			user.setIsfollowed(false);
 		} catch (SQLIntegrityConstraintViolationException e) {
 			System.out.println(e.getMessage());
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
 	}
-	
-	
-	
-	// Get all the users
+
+	/* Get all the users */
 	public List<User> getUsers(Integer start, Integer end) {
-		 String query = "SELECT id,name FROM User ORDER BY name ASC LIMIT ?,?;";
+		 String query = "SELECT id,username FROM User ORDER BY username ASC LIMIT ?,?;";
 		 PreparedStatement statement = null;
 		 List<User> l = new ArrayList<User>();
 		 try {
@@ -165,7 +145,7 @@ public class ManageUsers {
 			 while (rs.next()) {
 				 User user = new User();
 				 user.setId(rs.getInt("id"));
-				 user.setName(rs.getString("name"));
+				 user.setName(rs.getString("username"));
 				 l.add(user);
 			 }
 			 rs.close();
@@ -175,22 +155,22 @@ public class ManageUsers {
 		} 
 		return  l;
 	}
-	
+
 	public List<User> getNotFollowedUsers(Integer id, Integer start, Integer end) {
-		 String query = "SELECT id,name FROM User WHERE id NOT IN (SELECT id FROM User,Following WHERE id = fid AND uid = ?) AND id <> ? ORDER BY name LIMIT ?,?;";
+		 String query = "SELECT id,username FROM User WHERE id NOT IN (SELECT u.id FROM User u JOIN Following f ON u.id = f.followedId AND f.userId = ?) AND id <> ? ORDER BY username LIMIT ?,?;";
 		 PreparedStatement statement = null;
 		 List<User> l = new ArrayList<User>();
 		 try {
 			 statement = db.prepareStatement(query);
 			 statement.setInt(1,id);
-			 statement.setInt(2, id);
+			 statement.setInt(2,id);
 			 statement.setInt(3,start);
 			 statement.setInt(4,end);
 			 ResultSet rs = statement.executeQuery();
 			 while (rs.next()) {
 				 User user = new User();
 				 user.setId(rs.getInt("id"));
-				 user.setName(rs.getString("name"));
+				 user.setUser(rs.getString("username"));
 				 l.add(user);
 			 }
 			 rs.close();
@@ -202,7 +182,7 @@ public class ManageUsers {
 	}
 	
 	public List<User> getFollowedUsers(Integer id, Integer start, Integer end) {
-		 String query = "SELECT id,name FROM User,Following WHERE id = fid AND uid = ? ORDER BY name LIMIT ?,?;";
+		 String query = "SELECT id,username FROM User,Following WHERE id = followedId AND userId = ? ORDER BY username LIMIT ?,?;";
 		 PreparedStatement statement = null;
 		 List<User> l = new ArrayList<User>();
 		 try {
@@ -214,7 +194,7 @@ public class ManageUsers {
 			 while (rs.next()) {
 				 User user = new User();
 				 user.setId(rs.getInt("id"));
-				 user.setName(rs.getString("name"));
+				 user.setUser(rs.getString("username"));
 				 l.add(user);
 			 }
 			 rs.close();
@@ -224,7 +204,7 @@ public class ManageUsers {
 		} 
 		return  l;
 	}
-	
+
 	public Pair<Boolean,User> checkLogin(User user) {
 		
 		String query = "SELECT id,mail from User where name=? AND pwd=?";
@@ -251,140 +231,234 @@ public class ManageUsers {
 		return Pair.of(output,user);
 		
 	}
-	
-	public boolean checkUser(String user) {
-			
-			String query = "SELECT username from User where username=?";
-			PreparedStatement statement = null;
-			ResultSet rs = null;
-			boolean output = false;
-			try {
-				
-				statement = db.prepareStatement(query);
-				statement.setString(1,user);
-				rs = statement.executeQuery();
-				if (rs.isBeforeFirst()) {
-					output = true;
-				}
-				rs.close();
-				statement.close();
-				return output;
-				
-			} catch (SQLIntegrityConstraintViolationException e) {
-				System.out.println(e.getMessage());
-			} catch (SQLException e) {
-				e.printStackTrace();
-				System.out.println("We are facing errors trying to get the username from our database.");
-			}
-			
-			return output;
-			
-		}
-	
-	public boolean checkMail(String mail) {
+
+	public Pair<Boolean,User> checkLogin(User user) {
 		
-		String query = "SELECT mail from User where mail=?";
+		String query = "SELECT id,mail from User where name=? AND pwd=?";
 		PreparedStatement statement = null;
-		ResultSet rs = null;
 		boolean output = false;
 		try {
 			statement = db.prepareStatement(query);
-			statement.setString(1,mail);
-			rs = statement.executeQuery();
-			if (rs.isBeforeFirst()) {
+			statement.setString(1,user.getName());
+			statement.setString(2,user.getPwd1());
+			ResultSet rs = statement.executeQuery();
+			if (rs.next()) {
+				user.setId(rs.getInt("id"));
+				user.setMail(rs.getString("mail"));
 				output = true;
-			}
+			} 
 			rs.close();
 			statement.close();
-			return output;
-			
 		} catch (SQLIntegrityConstraintViolationException e) {
 			System.out.println(e.getMessage());
 		} catch (SQLException e) {
 			e.printStackTrace();
-			System.out.println("We are facing errors trying to get the emails from our database.");
 		}
-		return output;
+		
+		return Pair.of(output,user);
 		
 	}
-		
-	/*Check if all the fields are filled correctly */
+	
+	
+	/* ADDITIONAL FUNCTIONS WE NEED TO USE (User )*/
+	public boolean userExists(String user) {
+		/* We need to access the database and check if there's an user with that username */
+		boolean exists = false;
+		PreparedStatement ps = null;
+	    try {
+	        ps = db.prepareStatement("SELECT COUNT(*) FROM User WHERE username = ?");
+	        ps.setString(1, user);
+	        ResultSet rs = ps.executeQuery();
+	        if(rs.next()) {
+	        	int num = rs.getInt(1);
+	        	if (num>0) exists=true;
+	        }
+	        rs.close();
+	        ps.close();
+	    } catch (SQLException e) {
+	    	System.out.println("We are facing errors...");
+	        e.printStackTrace();
+	    }
+	    return exists;
+	}
+	public boolean mailExists(String mail) {
+		/* We need to access the database and check if there's an user with that email */
+		boolean exists = false;
+		PreparedStatement ps = null;
+	    try {
+	        ps = db.prepareStatement("SELECT COUNT(*) FROM User WHERE mail = ?");
+	        ps.setString(1, mail);
+	        ResultSet rs = ps.executeQuery();
+	        if(rs.next()) {
+	        	int num = rs.getInt(1);
+	        	if (num>0) exists=true;
+	        }
+	        rs.close();
+	        ps.close();
+	    } catch (SQLException e) {
+	    	System.out.println("We are facing errors...");
+	        e.printStackTrace();
+	    }
+	    return exists;
+	}
+	public boolean telExists(String tel) {
+		/* We need to access the database and check if there's an user with that telephone */
+		boolean exists = false;
+		PreparedStatement ps = null;
+	    try {
+	        ps = db.prepareStatement("SELECT COUNT(*) FROM User WHERE tel = ?");
+	        ps.setString(1, tel);
+	        ResultSet rs = ps.executeQuery();
+	        if(rs.next()) {
+	        	int num = rs.getInt(1);
+	        	if (num>0) exists=true;
+	        }
+	        rs.close();
+	        ps.close();
+	    } catch (SQLException e) {
+	    	System.out.println("We are facing errors...");
+	        e.printStackTrace();
+	    }
+	    return exists;
+	}
 	public boolean isComplete(User user) {
-		if(hasValue(user.getName()) &&
+		if(hasValue(user.getUser()) &&
+			hasValue(user.getName()) &&
 			hasValue(user.getSurname()) &&
 			hasValue(user.getUsername()) &&
 			hasValue(user.getMail()) &&
-			hasValue(user.getPhone()) &&
-			has_DateValue(user.getDatebirth()) && //modificar
-			hasValue(user.getPwd()) &&
+			hasValue(user.getTel()) &&
+			has_DateValue(user.getDob()) && //modificar
+			hasValue(user.getAbout()) &&
+			hasValue(user.getUsertype()) &&
+			hasValue(user.getPwd1()) &&
 			hasValue(user.getPwd2())) {
 			return true;
 		} else {
 			return false;
 		}
 	}
-	
-	public boolean isLoginComplete(User user) {
-	    return(hasValue(user.getName()) &&
-	    	   hasValue(user.getPwd()) );
-	}
-	
 	private boolean hasValue(String val) {
 		return((val != null) && (!val.equals("")));
 	}
-		
-	
-	// TODO: add other methods
-	public boolean checkPhone(String phone) {
-		
-		String query = "SELECT phone from User where phone=?";
-		PreparedStatement statement = null;
-		ResultSet rs = null;
-		boolean output = false;
-		try {
-			statement = db.prepareStatement(query);
-			statement.setString(1,phone);
-			rs = statement.executeQuery();
-			if (rs.isBeforeFirst()) {
-				output = true;
-			}
-			rs.close();
-			statement.close();
-			return output;
-			
-		} catch (SQLIntegrityConstraintViolationException e) {
-			System.out.println(e.getMessage());
-		} catch (SQLException e) {
-			e.printStackTrace();
-			System.out.println("We are facing errors trying to get the phone numbers from our database.");
-		}
-		return output;
-		
-	}
-
 	private boolean has_DateValue(Date val) {
 		return((val != null));
 	}
+
 	
+	/* Update the values of the user profile with the new ones */
+	public void editProfile(User user) {
+		String query = "UPDATE User SET username = ?, `name` = ?, surname = ?, mail = ?, dob = ?, about = ? WHERE id = ?";
 
-	public boolean loginUser(String username, String pwd) {
-		boolean exists = false;
-		PreparedStatement ps = null;
-	    try {
-	        ps = db.prepareStatement("SELECT * FROM User WHERE username = ? AND pwd = ?");
-	        ps.setString(1, username);
-	        ps.setString(2, pwd);
-	        ResultSet rs = ps.executeQuery();
-	        if(rs.next()) {
-	        	exists=true;
-	        }
-	        rs.close();
-	        ps.close();
-	    } catch (SQLException e) {
-	    	System.out.println("Username or password is incorrect...");
-	        e.printStackTrace();
-	    }
-	    return exists;
+
+		PreparedStatement statement = null;
+		try {
+			statement = db.prepareStatement(query);
+			statement.setString(1,user.getUser());
+			statement.setString(2,user.getName());
+			statement.setString(3,user.getSurname());
+			statement.setString(4,user.getMail());
+			statement.setString(5,user.getDob());
+			statement.setDate(6,user.getAbout());
+			statement.setInt(7,user.getId());
+			statement.executeUpdate();
+			statement.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 	}
+	/* Check everything is completed */
+	public boolean editComplete(User user) {
+		return(hasValue(user.getUser()) &&
+		    	   hasValue(user.getName()) &&
+				   hasValue(user.getSurname()) &&
+		    	   hasValue(user.getMail()) &&
+				   hasValue(user.getDob()) &&
+				   hasValue(user.getAbout()) &&
+		    	   user.getAbout() != null);
+	}
+	
+	/* Delete an user - done by administrators and/or own user */
+	public void deleteUser(Integer id) {
+		String query1 = "DELETE FROM TweetLike WHERE TweetLike.userId=?;";
+		String query2 = "DELETE FROM Tweet WHERE userId =?;";
+		String query3 = "DELETE FROM Following WHERE userId = ? or followedId = ?;";
+		String query4 = "DELETE FROM User WHERE id = ?;";
+		
+		PreparedStatement statement1 = null;
+		PreparedStatement statement2 = null;
+		PreparedStatement statement3 = null;
+		PreparedStatement statement4 = null;
 
+		try {
+			statement1 = db.prepareStatement(query1);
+			statement1.setInt(1,id);
+			statement1.executeUpdate();
+			statement1.close();
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		
+		try {
+			statement2 = db.prepareStatement(query2);
+			statement2.setInt(1,id);
+			statement2.executeUpdate();
+			statement2.close();
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		
+		try {
+			statement3 = db.prepareStatement(query3);
+			statement3.setInt(1,id);
+			statement3.setInt(2,id);
+			statement3.executeUpdate();
+			statement3.close();
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		
+		try {
+			statement4 = db.prepareStatement(query4);
+			statement4.setInt(1,id);
+			statement4.executeUpdate();
+			statement4.close();
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	/* Verify if the user associated with the current session is following another specified user */
+	public boolean isFollowed(Integer uid, Integer fid) {
+		boolean isFollowed = false;
+		String query = "SELECT * FROM Following WHERE userId= ? AND followedId=?";
+		PreparedStatement statement = null;
+		try {
+			 statement = db.prepareStatement(query);
+			 statement.setInt(1,uid);
+			 statement.setInt(2,fid);
+			 ResultSet rs = statement.executeQuery();
+			 if (rs.next()) {
+				 isFollowed = true;
+			 } else {
+				 isFollowed = false;
+			 }
+			 rs.close();
+			 statement.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} 
+		return isFollowed;
+	}
+	
+	/* Checkif all the fields are filled during Login */
+	public boolean LoginComplete(User user) {
+	    return(hasValue(user.getUser()) &&
+	    	   hasValue(user.getPwd1())
+	    	  );
+	}
 }
