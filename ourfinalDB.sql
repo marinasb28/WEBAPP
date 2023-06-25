@@ -49,9 +49,10 @@ CREATE TABLE Tweet(
   countHashtag int(10) default 0,
   countComment int(10) default 0,
   primary key(id),
-  foreign key (userId) references User(id),
-  foreign key (postId) references Tweet(postId)
+  foreign key (userId) references User(id)
 );
+
+ALTER TABLE Tweet ADD   foreign key (postId) references Tweet(id);
 
 
 DROP TABLE IF EXISTS TweetLikes;
@@ -80,8 +81,8 @@ INSERT INTO User (username, `name`, surname, mail, tel, dob, pwd, usertype, abou
 VALUES 
   ('marinasb28', 'Marina', 'Suárez', 'marina@gmail.com', '123456789', '2001-07-28', 'Marin@2', 'Administrator', "Hey, what's up?"),
   ('arne_be', 'Arne', 'Berrseheim', 'arne@gmail.com', '123123123', '2000-10-01', 'Hello@123', 'Administrator', "I'm finnaly done with my TFG"),
-  ("mariacp3", "Maria", "Cerezo","maria@gmail.com", "672182625",  "1997-16-05", "Mari@3!", "Administrator","Good morning everybody!"),
-  ("claudia_quera", "Claudia", "Quera","claudia@gmail.com", "612345678","2001-04-07", "Claudi@1", "Administrator", "I love basketball!"),
+  ('mariacp3', 'Maria', 'Cerezo','maria@gmail.com', '672182625', '2000-10-01', 'Mari@3!', 'Administrator','Good morning everybody!'),
+  ("claudia_quera", "Claudia", "Quera","claudia@gmail.com", "612345678",'2001-04-07', "Claudi@1", "Administrator", "I love basketball!"),
   
   ('randomUser1', 'Max', 'Mustermann', 'max@gmail.com', '123456123', '2000-01-01', 'Password@123', 'Common', 'Im here and using WhatsApp.'),
   ('randomUser2', 'Maxime', 'Muster', 'maxime@gmail.com', '123456124', '2000-01-01', 'Password@123', 'Common', 'Im here and using WhatsApp.'),
