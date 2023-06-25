@@ -42,6 +42,7 @@ DROP TABLE IF EXISTS Tweet;
 CREATE TABLE Tweet(
   id int(10) not null AUTO_INCREMENT,
   userId int(10) default null,
+  username VARCHAR(255) default null,
   `date` timestamp null default null,
   text varchar(150) default null,
   postId int(10) default null,
